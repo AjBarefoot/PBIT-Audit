@@ -1,0 +1,61 @@
+name: "🔍 Power BI DAX Audit"
+description: "Request a Copilot-driven DAX audit of a Power BI report (.pbip) in this repository."
+title: "Audit: "
+labels: ["audit", "copilot"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Power BI DAX Audit Request
+
+        Make sure you have exported your Power BI report as a `.pbip` project and committed it to this repository before opening this issue.
+
+        Once you submit this issue, assign **Copilot** to it and the agent will run the audit automatically.
+
+  - type: input
+    id: report-name
+    attributes:
+      label: Report Name
+      description: "The name of the Power BI report to audit (must match the .pbip folder name in the repo)."
+      placeholder: "e.g., Sales Dashboard"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: audit-passes
+    attributes:
+      label: Audit Passes
+      description: "Select which audit passes to run. All are checked by default for a full audit. Uncheck any you want to skip."
+      options:
+        - label: "01 — Measure Inventory"
+          required: false
+        - label: "02 — Redundancy Check"
+          required: false
+        - label: "03 — Performance Refactor Analysis"
+          required: false
+        - label: "04 — Naming Standardization Analysis"
+          required: false
+
+  - type: textarea
+    id: custom-conventions
+    attributes:
+      label: Custom Naming Conventions (optional)
+      description: |
+        Override the default naming conventions. Leave blank to use the standards defined in `.github/copilot-instructions.md`.
+
+        Example:
+        - Prefix currency measures with `Amt` instead of default
+        - Use `snake_case` instead of `PascalCase`
+        - Custom display folder names
+      placeholder: "Enter any custom conventions here..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context (optional)
+      description: "Any other details the auditor should know — business context, known issues, specific measures to focus on, etc."
+      placeholder: "Enter additional context here..."
+    validations:
+      required: false
