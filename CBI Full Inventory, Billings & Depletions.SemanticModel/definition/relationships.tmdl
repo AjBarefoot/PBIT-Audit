@@ -1,0 +1,16 @@
+relationship 1d54b0f9-13d0-72c6-2441-b361d71af359
+	fromColumn: 'Item Cross Reference'.'Brand (groups)'
+	toColumn: 'Table (3)'.'Brand (groups)'
+
+relationship AutoDetected_ea83699f-4a53-453b-942f-7f902eafe78c
+	fromColumn: Fact_Pallet_Ending.'Source.Name'
+	toColumn: Stg_Pallet_Results.'Source.Name'
+
+relationship b0ae894b-6e07-2943-7c30-e1ebeaa5423a
+	fromColumn: Fact_Pallet_Ending.Item_Code
+	toColumn: 'Item Cross Reference'.Item_Code
+
+relationship 2799a46c-c9cc-6afc-e344-a24dd7f06b7f
+	fromColumn: Fact_Pallet_Ending.MonthStartDate
+	toColumn: DimDate.Date
+

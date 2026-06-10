@@ -1,0 +1,151 @@
+table 'Item Cross Reference'
+	lineageTag: 1e4de381-dbc0-40f3-92a6-f42b836e8a55
+
+	column Item_Code
+		dataType: string
+		lineageTag: 18ec7e1f-6d63-481e-99fe-acf116f9d04d
+		summarizeBy: none
+		sourceColumn: Item_Code
+
+		annotation SummarizationSetBy = Automatic
+
+	column PACKAGE
+		dataType: string
+		lineageTag: 4ba6f16f-73bb-4fa9-b08b-27f70d417ac1
+		summarizeBy: none
+		sourceColumn: PACKAGE
+
+		annotation SummarizationSetBy = Automatic
+
+	column SIZE
+		dataType: int64
+		formatString: 0
+		lineageTag: 11cd3ca2-d917-41a8-8955-46867b7c4a67
+		summarizeBy: sum
+		sourceColumn: SIZE
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	column COUNT
+		dataType: double
+		lineageTag: d1981c3d-9497-4573-b6f9-23a0f8607377
+		summarizeBy: sum
+		sourceColumn: COUNT
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Brand
+		dataType: string
+		lineageTag: 71de2bab-7129-4df8-8000-0f71fb7a5bed
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation __PBI_SemanticLinks = [{"LinkTarget":{"TableName":"Item Cross Reference","TableItemName":"Brand (groups)","ObjectType":4},"LinkType":"UsedInGroup"}]
+
+	column 'Onces per Item' = 'Item Cross Reference'[SIZE]*'Item Cross Reference'[COUNT]
+		lineageTag: 8d9d0273-030c-4f48-a988-c1196aeaac9c
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Beer Weight' = 'Item Cross Reference'[Onces per Item]*.066
+		lineageTag: 7c566537-d162-4639-a7e0-2fab5b169eb9
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Package Weight' = IF('Item Cross Reference'[PACKAGE]="CAN",.04*'Item Cross Reference'[COUNT],IF('Item Cross Reference'[PACKAGE]="BOTTLE",.4*'Item Cross Reference'[COUNT],35*'Item Cross Reference'[COUNT]))
+		lineageTag: 0e3042f0-b153-4870-8c35-4194d2fdeafd
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Weight Per Item' = +IF('Item Cross Reference'[PACKAGE]="KEG",'Item Cross Reference'[Beer Weight]+'Item Cross Reference'[Package Weight],1+'Item Cross Reference'[Beer Weight]+'Item Cross Reference'[Package Weight])
+		lineageTag: d3c39451-382c-4365-80a1-e700983060bf
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Brand (groups)' =
+			SWITCH(
+				TRUE,
+				ISBLANK('Item Cross Reference'[Brand]),
+				"(Blank)",
+				'Item Cross Reference'[Brand] IN {"Corona",
+					"Coronita"},
+				"Corona",
+				'Item Cross Reference'[Brand] IN {"Corona Familiar"},
+				"Corona Familiar",
+				'Item Cross Reference'[Brand] IN {"Corona Light"},
+				"Corona Light",
+				'Item Cross Reference'[Brand] IN {"Corona Premier"},
+				"Corona Premier",
+				'Item Cross Reference'[Brand] IN {"Modelo Chelada"},
+				"Modelo Chelada",
+				'Item Cross Reference'[Brand] IN {"Modelito",
+					"Modelo",
+					"Modelo Especial"},
+				"Modelo Especial",
+				'Item Cross Reference'[Brand] IN {"Modelo Negra"},
+				"Modelo Negra",
+				'Item Cross Reference'[Brand] IN {"Pacifico"},
+				"Pacifico",
+				'Item Cross Reference'[Brand] IN {"Victoria"},
+				"Victoria",
+				"All other Brands/Extensions"
+			)
+		lineageTag: 80f66d82-5c5e-4b70-a0de-8b89212031be
+		summarizeBy: none
+
+		extendedProperty GroupingMetadata =
+				{
+				  "version": 0,
+				  "groupedColumns": [
+				    {
+				      "Column": {
+				        "Expression": {
+				          "SourceRef": {
+				            "Entity": "Item Cross Reference"
+				          }
+				        },
+				        "Property": "Brand"
+				      }
+				    }
+				  ]
+				}
+
+		changedProperty = SortByColumn
+
+		annotation GroupingDesignState = {"Version":0,"Sources":[{"Name":"i","Entity":"Item Cross Reference"}],"GroupedColumns":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"GroupItems":[{"DisplayName":"(Blank)","BlankDefaultPlaceholder":true},{"DisplayName":"Corona","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"Values":[[{"Literal":{"Value":"'Corona'"}}],[{"Literal":{"Value":"'Coronita'"}}]]}}},{"DisplayName":"Corona Familiar","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"Values":[[{"Literal":{"Value":"'Corona Familiar'"}}]]}}},{"DisplayName":"Corona Light","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"Values":[[{"Literal":{"Value":"'Corona Light'"}}]]}}},{"DisplayName":"Corona Premier","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"Values":[[{"Literal":{"Value":"'Corona Premier'"}}]]}}},{"DisplayName":"Modelo Chelada","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"Values":[[{"Literal":{"Value":"'Modelo Chelada'"}}]]}}},{"DisplayName":"Modelo Especial","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"Values":[[{"Literal":{"Value":"'Modelito'"}}],[{"Literal":{"Value":"'Modelo'"}}],[{"Literal":{"Value":"'Modelo Especial'"}}]]}}},{"DisplayName":"Modelo Negra","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"Values":[[{"Literal":{"Value":"'Modelo Negra'"}}]]}}},{"DisplayName":"Pacifico","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"Values":[[{"Literal":{"Value":"'Pacifico'"}}]]}}},{"DisplayName":"Victoria","Expression":{"In":{"Expressions":[{"Column":{"Expression":{"SourceRef":{"Source":"i"}},"Property":"Brand"}}],"Values":[[{"Literal":{"Value":"'Victoria'"}}]]}}},{"DisplayName":"All other Brands/Extensions"}]}
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Item Cross Reference' = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("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", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Item_Code = _t, PACKAGE = _t, SIZE = _t, COUNT = _t, Brand = _t]),
+				    #"Removed Duplicates" = Table.Distinct(Source, {"Item_Code"})
+				in
+				    #"Removed Duplicates"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

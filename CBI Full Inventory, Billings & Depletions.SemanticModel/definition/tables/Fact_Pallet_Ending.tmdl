@@ -1,0 +1,477 @@
+table Fact_Pallet_Ending
+	lineageTag: dadf11ef-8c31-4638-9b53-0739649d9db8
+
+	measure 'Total Billings' = SUM(Fact_Pallet_Ending[Billings])
+		lineageTag: 87874192-f2ed-42e0-b224-450ad6593e20
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Depletions' = SUM(Fact_Pallet_Ending[Depletions])
+		lineageTag: b3f06ee1-f0ab-4cf4-b692-2bd147e0dc14
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total DC Inventory' = SUM(Fact_Pallet_Ending[DC Ending Inventory])
+		formatString: 0
+		lineageTag: 0c34a629-23af-4e09-a04b-fed06a3bf4fe
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure 'Total Distributor Inventory' = SUM(Fact_Pallet_Ending[Distributor Ending Inventory])
+		lineageTag: 7dca57e8-d19e-430a-b086-d3820595d431
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Full Inventory' = [Total DC Inventory]+[Total Distributor Inventory]+Sum(Fact_Pallet_Ending[Ending In-Transit])
+		lineageTag: 9b76a6d7-9830-42bb-96d1-5aa085a4149d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Billings YoY' =
+			
+			CALCULATE(
+			    [Total Billings],
+			    SAMEPERIODLASTYEAR(DimDate[Date])
+			)
+		lineageTag: a10289b8-7869-4fc7-bff1-de2d27823382
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Billings LTM' =
+			
+			CALCULATE(
+			    [Total Billings],
+			    DATESINPERIOD(
+			        DimDate[Date],
+			        MAX(DimDate[Date]),
+			        -12,
+			        MONTH
+			    )
+			)
+		lineageTag: a61c1036-28dc-4f10-9983-6a18fcb9c9c2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Billings Rolling 12' =
+			
+			CALCULATE(
+			    [Total Billings],
+			    DATESINPERIOD(
+			        DimDate[Date],
+			        MAX(DimDate[Date]),
+			        -12,
+			        MONTH
+			    )
+			)
+		formatString: 0.00
+		lineageTag: 5051fc7c-2809-4462-a912-9cd2b8ad32e9
+
+	measure 'Full Inventory PY' =
+			
+			CALCULATE(
+			    [Total Full Inventory],
+			    FILTER(
+			        ALL(DimDate),
+			        DimDate[Year] = MAX(DimDate[Year]) - 1 &&
+			        DimDate[MonthNum] = MAX(DimDate[MonthNum])
+			    )
+			)
+		lineageTag: 5a861772-1cd8-429b-ba26-79290fe34f89
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Inventory YOY' = [Total Full Inventory]-[Full Inventory PY]
+		lineageTag: f293bb95-d119-47dc-8c7b-12a3d6b2e3ea
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Depletions Rolling 12' =
+			
+			CALCULATE(
+			    [Total Depletions],
+			    DATESINPERIOD(
+			        DimDate[Date],
+			        MAX(DimDate[Date]),
+			        -12,
+			        MONTH
+			    )
+			)
+		lineageTag: 8a7bbbd4-9420-4928-b74d-d49bcff454e4
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'DC Inventory PY' =
+			
+			CALCULATE(
+			    [Total DC Inventory],
+			    FILTER(
+			        ALL(DimDate),
+			        DimDate[Year] = MAX(DimDate[Year]) - 1 &&
+			        DimDate[MonthNum] = MAX(DimDate[MonthNum])
+			    )
+			)
+		lineageTag: 683839f0-1fef-4677-a611-7e8ead548baa
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'DC Inventory YOY' = [Total DC Inventory]-[DC Inventory PY]
+		formatString: 0
+		lineageTag: ad5615e3-1732-4d7f-b563-095c3b0c2f95
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure 'DC YoY%' = DIVIDE([DC Inventory YOY],[DC Inventory PY])
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: b99a2de3-deb4-4dd0-96df-6abfb31e107c
+
+	measure 'Inventory Coverage Months (DC)' = Divide([Total DC Inventory],[Next Month Billings])
+		formatString: 0.0
+		lineageTag: 9c7c4bcb-e5cf-4454-b7b9-b00052cbfe4b
+
+	measure 'Inventory Coverage Months (Dist)' = Divide([Total Distributor Inventory],[Next Month Depletions])
+		lineageTag: 04c74349-4bba-487c-b562-83fc9a84b53d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Billings (Plts)' = SUM(Fact_Pallet_Ending[Billings_PLT])
+		lineageTag: 5d768a0e-2070-46bf-8dd4-2daea57d03dd
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Depletions (Plts)' = SUM(Fact_Pallet_Ending[Depletions_PLT])
+		lineageTag: 74ffeea7-73f0-4d23-99dd-a8a8a171aa93
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total DC Inventory (Plts)' = SUM(Fact_Pallet_Ending[DC Ending Inventory_PLT])
+		lineageTag: a6780ca8-2d16-4ef1-8a73-7e268a8085bc
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Distributor Inventory (Plts)' = SUM(Fact_Pallet_Ending[Distributor Ending Inventory_PLT])
+		lineageTag: 5fb7540b-3bea-4ac4-9dd1-65ecae89204d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Full Inventory (Plts)' = [Total DC Inventory (Plts)]+[Total Distributor Inventory (Plts)]+Sum(Fact_Pallet_Ending[Ending In-Transit_PLT])
+		lineageTag: ae0bc6a7-1c72-40d8-a8a3-e5ffc7b35411
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'DC Inventory PY (Plts)' =
+			
+			CALCULATE(
+			    [Total DC Inventory (Plts)],
+			    FILTER(
+			        ALL(DimDate),
+			        DimDate[Year] = MAX(DimDate[Year]) - 1 &&
+			        DimDate[MonthNum] = MAX(DimDate[MonthNum])
+			    )
+			)
+		lineageTag: 5328a72a-3e33-4a5a-9dc8-76d914ca68d4
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Inventory Coverage Months (DC:Plts)' = Divide([Total DC Inventory (Plts)],[Next Month Billings (Plts)])
+		lineageTag: aed02ab8-54cb-4e50-a0af-89190f96b41a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Inventory Coverage Months (Dist:Plts)' = Divide([Total Distributor Inventory (Plts)],[Next Month Depletions (Plts)])
+		lineageTag: 069a2e43-b65e-4523-8985-c93ef8fff40e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Depletions Rolling 12 (Plts)' =
+			
+			CALCULATE(
+			    [Total Depletions (Plts)],
+			    DATESINPERIOD(
+			        DimDate[Date],
+			        MAX(DimDate[Date]),
+			        -12,
+			        MONTH
+			    )
+			)
+		lineageTag: 5e087d8c-9a7e-4db3-b73c-5759e388abf1
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Billings Rolling 12 (Plts)' =
+			
+			CALCULATE(
+			    [Total Billings (Plts)],
+			    DATESINPERIOD(
+			        DimDate[Date],
+			        MAX(DimDate[Date]),
+			        -12,
+			        MONTH
+			    )
+			)
+		formatString: 0.00
+		lineageTag: 5ab30a30-16fc-4aef-af58-180187cbea53
+
+	measure 'Billings Rolling 12 Prior Month (Plts)' =
+			
+			CALCULATE(
+			    [Billings Rolling 12 (Plts)],
+			    DATEADD(DimDate[Date], -1, MONTH)
+			)
+		lineageTag: 1907c82f-043c-4720-9720-ece2717abf43
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Billings Rolling 12 MoM % (Plts)' = DIVIDE(([Billings Rolling 12 (Plts)]-[Billings Rolling 12 Prior Month (Plts)]),[Billings Rolling 12 Prior Month (Plts)])
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: a38a1052-10ce-4be9-909a-7530010c15f0
+
+	measure 'Billings Rolling 12 Prior Month' =
+			
+			CALCULATE(
+			    [Billings Rolling 12],
+			    DATEADD(DimDate[Date], -1, MONTH)
+			)
+		lineageTag: b62c1c9f-012d-46b8-9b33-619627454736
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Billings Rolling 12 MoM %' = DIVIDE(([Billings Rolling 12]-[Billings Rolling 12 Prior Month]),[Billings Rolling 12 Prior Month])
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 35b816db-306c-43de-a57b-96728c114fef
+
+	measure 'Depletions Rolling 12 Prior Month' =
+			
+			CALCULATE(
+			    [Depletions Rolling 12],
+			    DATEADD(DimDate[Date], -1, MONTH)
+			)
+		lineageTag: ca6bc519-094d-4e60-810c-c9d487bbf99a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Depletions Rolling 12 MoM %' = DIVIDE(([Depletions Rolling 12]-[Depletions Rolling 12 Prior Month]),[Depletions Rolling 12 Prior Month])
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: b96704a0-faf3-4eb8-98cd-dd0f3e824acc
+
+	measure 'Depletions Rolling 12 Prior Month (Plts)' =
+			
+			CALCULATE(
+			    [Depletions Rolling 12 (Plts)],
+			    DATEADD(DimDate[Date], -1, MONTH)
+			)
+		lineageTag: e808cdb6-34a0-4dd9-96b5-dc044524aa32
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Depletions Rolling 12 MoM % (Plts)' = DIVIDE(([Depletions Rolling 12 (Plts)]-[Depletions Rolling 12 Prior Month (Plts)]),[Depletions Rolling 12 Prior Month (Plts)])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 96bbac1d-9e70-4079-b02a-699f2ca4c99f
+
+	measure 'Depletions LTM' =
+			
+			CALCULATE(
+			    [Total Depletions],
+			    DATESINPERIOD(
+			        DimDate[Date],
+			        MAX(DimDate[Date]),
+			        -12,
+			        MONTH
+			    )
+			)
+		lineageTag: 7c5f6ce1-6bfe-4d68-bfaa-cb5c884f205f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Inventory Coverage Months (Dist_current)' = Divide([Total Distributor Inventory],[Total Depletions])
+		lineageTag: b173e305-6ddb-4a7f-b888-9c4712c570f2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Inventory Coverage Months (DC_Current)' = Divide([Total DC Inventory],[Total Billings])
+		lineageTag: 6d9a77df-bff4-4c11-80dd-6e3e0a8604e7
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Source.Name'
+		dataType: string
+		lineageTag: 1941caac-19c9-4430-94ca-10cf4de7456a
+		summarizeBy: none
+		sourceColumn: Source.Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthStartDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: be1174b2-7297-499a-88a7-8ead2f8a17cf
+		summarizeBy: none
+		sourceColumn: MonthStartDate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Item_Code
+		dataType: string
+		lineageTag: 15c9dcfd-7cf0-4763-9dd1-8900d8119633
+		summarizeBy: none
+		sourceColumn: Item_Code
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	column Item
+		dataType: string
+		lineageTag: 80f8f510-ca97-4a9f-b680-d3f01521dc8b
+		summarizeBy: none
+		sourceColumn: Item
+
+		annotation SummarizationSetBy = Automatic
+
+	column Pack_Type
+		dataType: string
+		lineageTag: c015d32b-e597-47cf-bdf8-15a0f616b14b
+		summarizeBy: none
+		sourceColumn: Pack_Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column Billings
+		dataType: double
+		lineageTag: 27c3d958-e1a6-4a64-bd9f-cf8e0430d6ad
+		summarizeBy: sum
+		sourceColumn: Billings
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Depletions
+		dataType: double
+		lineageTag: f3dc5724-9730-4edd-9661-1092e19171d8
+		summarizeBy: sum
+		sourceColumn: Depletions
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Distributor Ending Inventory'
+		dataType: double
+		lineageTag: 7ef06123-b28f-4f87-8515-35da7852fba7
+		summarizeBy: sum
+		sourceColumn: Distributor Ending Inventory
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'DC Ending Inventory'
+		dataType: double
+		lineageTag: 89fd7508-2b33-4704-a002-a07095079e60
+		summarizeBy: sum
+		sourceColumn: DC Ending Inventory
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Ending In-Transit'
+		dataType: double
+		lineageTag: d033a400-7457-4c25-a386-7135f7521fd9
+		summarizeBy: sum
+		sourceColumn: Ending In-Transit
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Billings_PLT
+		dataType: double
+		lineageTag: c70db028-a709-4c48-b18d-3868ece0cad4
+		summarizeBy: sum
+		sourceColumn: Billings_PLT
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Depletions_PLT
+		dataType: double
+		lineageTag: dbe4aedd-bc3b-4ccf-b47d-384aed30594e
+		summarizeBy: sum
+		sourceColumn: Depletions_PLT
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Distributor Ending Inventory_PLT'
+		dataType: double
+		lineageTag: 911dfd01-4af1-4321-b2bf-66db75477142
+		summarizeBy: sum
+		sourceColumn: Distributor Ending Inventory_PLT
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'DC Ending Inventory_PLT'
+		dataType: double
+		lineageTag: c69f47fa-39de-44a0-9a08-940614715e1b
+		summarizeBy: sum
+		sourceColumn: DC Ending Inventory_PLT
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Ending In-Transit_PLT'
+		dataType: double
+		lineageTag: b4f62116-3261-4ea8-8e10-9209d9e97930
+		summarizeBy: sum
+		sourceColumn: Ending In-Transit_PLT
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Onces per Item' = LOOKUPVALUE('Item Cross Reference'[Onces per Item],'Item Cross Reference'[Item_Code],Fact_Pallet_Ending[Item_Code])
+		lineageTag: a0023fec-c58a-4e4f-b2a5-aab91405152e
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Billing Onces' = Fact_Pallet_Ending[Billings]*Fact_Pallet_Ending[Onces per Item]
+		lineageTag: de900734-ead3-4ce7-9a99-d9b6a176a5f4
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Depletion Onces' = Fact_Pallet_Ending[Depletions]*Fact_Pallet_Ending[Onces per Item]
+		lineageTag: ce691e10-da47-4547-b70a-5e62267c7a94
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition Fact_Pallet_Ending = m
+		mode: import
+		source =
+				let
+				    Stg = Stg_Pallet_Results,
+				    Results = Stg[Result],
+				    DataTables = List.Transform(Results, each _[Data]),
+				    Fact = if List.Count(DataTables) = 0 then #table({}, {}) else Table.Combine(DataTables),
+				    #"Filtered Rows" = Table.SelectRows(Fact, each [MonthStartDate] <> null and [MonthStartDate] <> "")
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

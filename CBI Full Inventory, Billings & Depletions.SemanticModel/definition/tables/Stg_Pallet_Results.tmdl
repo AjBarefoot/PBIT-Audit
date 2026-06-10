@@ -1,0 +1,55 @@
+table Stg_Pallet_Results
+	lineageTag: 2413985d-ed7f-4689-9392-db8ba7b15cfd
+
+	column 'Source.Name'
+		dataType: string
+		lineageTag: 55b11d32-f29c-46e9-a7de-7a9158ecaa14
+		summarizeBy: none
+		sourceColumn: Source.Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Result
+		dataType: string
+		lineageTag: 21ba6d95-523e-4e2e-805c-ff7f3c1d0371
+		summarizeBy: none
+		sourceColumn: Result
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Stg_Pallet_Results = m
+		mode: import
+		source =
+				let
+				    Source =
+				        SharePoint.Files(
+				            "https://microstarkegs.sharepoint.com/sites/External-MCBIPalletManagement",
+				            [ApiVersion = 15]
+				        ),
+				
+				    #"Filtered Files" =
+				        Table.SelectRows(
+				            Source,
+				            each Text.EndsWith([Name], ".xlsx")
+				                and ([Attributes]?[Hidden]? <> true)
+				        ),
+				
+				    #"Selected Columns" =
+				        Table.SelectColumns(#"Filtered Files", {"Name","Content"}),
+				
+				    #"Renamed" =
+				        Table.RenameColumns(#"Selected Columns", {{"Name","Source.Name"}}),
+				
+				    #"Added Result" =
+				        Table.AddColumn(
+				            #"Renamed",
+				            "Result",
+				            each fxProcessPalletFile([Source.Name], [Content])
+				        )
+				in
+				    #"Added Result"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

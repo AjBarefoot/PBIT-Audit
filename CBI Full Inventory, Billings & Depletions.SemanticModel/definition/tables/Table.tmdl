@@ -1,0 +1,40 @@
+table Table
+	lineageTag: a5ad545c-a64d-47a1-b8d6-c2761226afa6
+
+	column 'CBI Qtr'
+		dataType: string
+		lineageTag: d4a67561-4681-4763-b566-67bd18dc489f
+		summarizeBy: none
+		sourceColumn: CBI Qtr
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Rpt Beer Shipments (MM)'
+		dataType: double
+		formatString: 0.0
+		lineageTag: f7c97b55-cd1b-4bec-ac86-c7e83902d802
+		summarizeBy: sum
+		sourceColumn: Rpt Beer Shipments (MM)
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'CE Shipments' = 'Table'[Rpt Beer Shipments (MM)]*1000000
+		formatString: 0
+		lineageTag: b58c5e71-14e0-4254-b943-9c27c07427e5
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Table = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WMjIwMlMINFTSUTI0NNQzVorVgYkZgcXM9UyQxIxBYgYGCDFThUAToJiFKYoysJAZyLRYAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"CBI Qtr" = _t, #"Rpt Beer Shipments (MM)" = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Rpt Beer Shipments (MM)", type number}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

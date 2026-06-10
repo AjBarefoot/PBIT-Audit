@@ -1,0 +1,87 @@
+table 'Table (2)'
+	lineageTag: 71a1f5d0-fd46-4dbd-9328-638cd8aa6294
+
+	column Qtr
+		dataType: string
+		lineageTag: e61ec660-d180-4972-bf9e-ee77c38200c2
+		summarizeBy: none
+		sourceColumn: Qtr
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Plastic Pallet Shipments (CE)' = CALCULATE(SUM('Billings/Depletions/Inventory'[CE Shipments in MM]),FILTER('Billings/Depletions/Inventory','Billings/Depletions/Inventory'[CBI QTR]='Table (2)'[Qtr]))
+		lineageTag: e2dfe3fa-96c1-477e-99b1-a203797b6220
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'CBI Reported Shipments (CE)' = CALCULATE(SUM('Table'[Rpt Beer Shipments (MM)]),FILTER('Table','Table'[CBI Qtr]='Table (2)'[Qtr]))
+		lineageTag: 48675112-6cec-4636-9922-851d42d9052d
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Total Pallets Shipments (MM)' = 'Table (2)'[CBI Reported Shipments (CE)]/62
+		lineageTag: f0ff9ba0-4eed-4749-b1f1-1bd0a8d3fca2
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Plastic Pallet Shipments (MM)' = CALCULATE(SUM('Billings/Depletions/Inventory'[Billings_PLT]),FILTER('Billings/Depletions/Inventory','Billings/Depletions/Inventory'[CBI QTR]='Table (2)'[Qtr]))/1000000
+		formatString: 0.0
+		lineageTag: 26fad208-55f4-469e-a3ae-6ef485c9bb4f
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'MKM Fills'
+		dataType: double
+		lineageTag: 89fd2870-13e1-4379-979c-3d5cfcdf8649
+		summarizeBy: sum
+		sourceColumn: MKM Fills
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Total Shipments in Plastic' = 'Table (2)'[Plastic Pallet Shipments (MM)]/'Table (2)'[Total Pallets Shipments (MM)]
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 993a9785-7135-434e-8c70-e1b6babef29e
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Total Shipments in MKM Supplied' = SUM('Table (2)'[MKM Fills])/SUM('Table (2)'[Total Pallets Shipments (MM)])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: ba39e4c3-1733-4dcb-8e63-d6e8eaf0cd1d
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'MKM Fills Estimated Case Equivalent' = 'Table (2)'[MKM Fills]*62
+		lineageTag: 03eaf414-9bab-43b5-9623-c55872be4ec6
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'Table (2)' = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WMjIwMlMINFTSUTLUMzIzMrKwVIrVgQkbgYVNDc3MDMyQhI2hqi3MjIHCsQA=", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Qtr = _t, #"MKM Fills" = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"MKM Fills", type number}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

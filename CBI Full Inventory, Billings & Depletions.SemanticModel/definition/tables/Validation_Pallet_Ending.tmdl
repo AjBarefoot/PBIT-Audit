@@ -1,0 +1,42 @@
+table Validation_Pallet_Ending
+	lineageTag: db638b24-c20e-4eca-8398-fb4d2a28185b
+
+	column 'Source.Name'
+		dataType: string
+		lineageTag: 87bbfdcc-6331-41f6-a5a8-9008ca29bfe2
+		summarizeBy: none
+		sourceColumn: Source.Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Issue
+		dataType: string
+		lineageTag: 8843ea2d-0032-4d3c-8bc2-f63c469780f2
+		summarizeBy: none
+		sourceColumn: Issue
+
+		annotation SummarizationSetBy = Automatic
+
+	column Detail
+		dataType: string
+		lineageTag: 388fd7bf-7115-42b9-b51d-0e5a40db89d8
+		summarizeBy: none
+		sourceColumn: Detail
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Validation_Pallet_Ending = m
+		mode: import
+		source =
+				let
+				    Stg = Stg_Pallet_Results,
+				    Results = Stg[Result],
+				    IssueTables = List.Transform(Results, each _[Issues]),
+				    Validation = if List.Count(IssueTables) = 0 then #table({"Source.Name","Issue","Detail"}, {}) else Table.Combine(IssueTables)
+				in
+				    Validation
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

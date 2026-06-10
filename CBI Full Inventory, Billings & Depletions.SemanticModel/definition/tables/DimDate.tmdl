@@ -1,0 +1,131 @@
+table DimDate
+	lineageTag: 23d91e4b-bf99-4fb6-bc4c-68835b811fa2
+	dataCategory: Time
+
+	measure 'Next Month Billings' =
+			
+			CALCULATE(
+			    [Total Billings],
+			    DATEADD(DimDate[Date], 1, MONTH)
+			)
+		lineageTag: a98b9189-28dc-4966-a8d1-d83180e7b3f5
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Next Month Depletions' =
+			
+			CALCULATE(
+			    [Total Depletions],
+			    DATEADD(DimDate[Date], 1, MONTH)
+			)
+		lineageTag: e16dbf05-a031-435d-b6c5-5ccb7883bac0
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Next Month Billings (Plts)' =
+			
+			CALCULATE(
+			    [Total Billings (Plts)],
+			    DATEADD(DimDate[Date], 1, MONTH)
+			)
+		lineageTag: 14ca5e0f-2f57-4597-9546-a5067d9bdd23
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Next Month Depletions (Plts)' =
+			
+			CALCULATE(
+			    [Total Depletions (Plts)],
+			    DATEADD(DimDate[Date], 1, MONTH)
+			)
+		lineageTag: 1a8ce07a-dfbc-4ed2-bdf6-8633c18a0005
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'CE per Plt (Billing)' = (SUM(Fact_Pallet_Ending[Billing Onces])/SUM(Fact_Pallet_Ending[Billings_PLT]) )/288
+		lineageTag: 69ee68f4-fd58-435c-b87d-ea6378021123
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'CE per Plt (Depletions)' = (SUM(Fact_Pallet_Ending[Depletion Onces])/SUM(Fact_Pallet_Ending[Depletions_PLT]))/288
+		lineageTag: 45f1ee8c-2895-42f7-85a2-326a436747d1
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Date
+		isKey
+		formatString: Long Date
+		lineageTag: bf7211e2-d670-4bb0-abd4-b763a44052d9
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		formatString: 0
+		lineageTag: 2c708666-4a79-4a14-ac4a-e634981922b3
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Year]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthNum
+		formatString: 0
+		lineageTag: 336764a9-0e28-4b4a-b100-9361c8ffba68
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [MonthNum]
+
+		annotation SummarizationSetBy = Automatic
+
+	column YearMonth
+		lineageTag: 4ef70bb2-0284-4a5e-8d61-6e0278dd58b3
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [YearMonth]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Name'
+		lineageTag: 1b564255-2d26-48f5-ada7-dcce31b176b5
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Name]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MonthStart
+		formatString: MM-YY
+		lineageTag: bc0575a8-da78-4a9e-8f0d-4fbc1165a397
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [MonthStart]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	partition DimDate = calculated
+		mode: import
+		source =
+				
+				ADDCOLUMNS(
+				    CALENDAR(
+				        MIN(Fact_Pallet_Ending[MonthStartDate]),
+				        MAX(Fact_Pallet_Ending[MonthStartDate])
+				    ),
+				    "Year", YEAR([Date]),
+				    "MonthNum", MONTH([Date]),
+				    "YearMonth", FORMAT([Date], "YYYY-MM"),
+				    "Month Name", FORMAT([Date], "MMM"),
+				    "MonthStart", DATE(YEAR([Date]), MONTH([Date]), 1)
+				)
+
+	annotation PBI_Id = d971b505cb5848ee800b422bb8d11ceb
+
