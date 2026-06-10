@@ -64,12 +64,12 @@ For each finding, provide:
 
 Analyze every DAX measure for performance anti-patterns:
 
-1. **Row-by-row iteration** — `SUMX` / `FILTER` over large tables where `CALCULATE` + aggregation would suffice.
+1. **Row-by-row iteration with unnecessary FILTER** — e.g., `SUMX(FILTER(LargeTable, ...), ...)` where `CALCULATE(SUM(...), ...)` would suffice. Note: `SUMX` alone is often correct for row-level calculations.
 2. **Unnecessary context transitions** — nested `CALCULATE` without purpose.
 3. **Expensive FILTER vs KEEPFILTERS** — `FILTER(ALL(...))` patterns that could use `KEEPFILTERS` or `REMOVEFILTERS`.
 4. **Scalar-to-table conversions** — `VALUES` / `DISTINCT` used unnecessarily.
 5. **Missing USERELATIONSHIP** — active/inactive relationship misuse.
-6. **Redundant CALCULATE wrapping** — `CALCULATE` around a simple aggregation that already respects filter context.
+6. **Redundant CALCULATE wrapping** — `CALCULATE` with no filter arguments around a simple aggregation (e.g., `CALCULATE(SUM(...))`  with no additional filters). Note: `CALCULATE` with filter arguments or used intentionally for context transition is valid.
 7. **Unsafe division** — use of `/` operator instead of `DIVIDE()` for safe division.
 8. **Inconsistent function casing** — e.g., `Sum` vs `SUM`.
 

@@ -25,7 +25,7 @@ body:
     id: audit-passes
     attributes:
       label: Audit Passes
-      description: "Select which audit passes to run. Leave all checked for a full audit."
+      description: "Select which audit passes to run. All are checked by default for a full audit. Uncheck any you want to skip."
       options:
         - label: "01 — Measure Inventory"
           required: false
