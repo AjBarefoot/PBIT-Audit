@@ -1,0 +1,17 @@
+# Power BI cache and binary artifacts
+**/Cache/
+*.pbix
+*.pbit
+*.tmp
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+*.code-workspace
+
+# Logs
+*.log
