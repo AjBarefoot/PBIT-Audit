@@ -1,0 +1,37 @@
+table 'Table (3)'
+	lineageTag: 651067a3-94f9-4a1b-ba5b-7da496ff3e37
+
+	column 'Brand (groups)'
+		dataType: string
+		lineageTag: c4eff336-a6e3-4f61-a9ff-bbdd146154c3
+		summarizeBy: none
+		sourceColumn: Brand (groups)
+		sortByColumn: Rank
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Rank
+		dataType: int64
+		formatString: 0
+		lineageTag: 26782e31-ef43-4e82-b1a4-e96e486ef2c4
+		summarizeBy: none
+		sourceColumn: Rank
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Table (3)' = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("Tc67DsMgDAXQX0HMkfp+jW2UTm2VqQvKYBE3WCK4Mgz9/EImxnt0ZV9j9NV7xcmhqJtAGOOq+yUMkThE3ejNWg+N0T1Y+pDlLLsF3mQTC0GG0wJPHtGzeuEkBS8LtiwcStxWUd1hJk8g2Q+1P2hyKeO5xl5wJizdY/2ndehhLKf3NXfxi5bAl+V6GP4=", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Brand (groups)" = _t, Rank = _t])
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

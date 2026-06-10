@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "CBI Full Inventory, Billings & Depletions"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "c707d2b9-c050-42b5-af72-746f31a953b1"
+  }
+}

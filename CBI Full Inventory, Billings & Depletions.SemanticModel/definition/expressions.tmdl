@@ -1,0 +1,155 @@
+expression fxProcessPalletFile =
+		(fileName as text, content as binary) as record =>
+		let
+		    // ---------- helpers ----------
+		    AddIssue = (issues as table, issue as text, detail as nullable text) as table =>
+		        Table.InsertRows(issues, Table.RowCount(issues), {{fileName, issue, detail}}),
+		
+		    ToNumber = (x as any) as nullable number =>
+		        try Number.From(x) otherwise
+		        try Number.FromText(Text.From(x)) otherwise null,
+		
+		    Issues0 = #table({"Source.Name","Issue","Detail"}, {}),
+		
+		    // ---------- open workbook ----------
+		    WBtry = try Excel.Workbook(content, true) otherwise null,
+		    Issues1 = if WBtry = null then AddIssue(Issues0, "WorkbookOpenFailed", null) else Issues0,
+		    WB = if WBtry = null then #table({"Name","Kind","Data"}, {}) else WBtry,
+		
+		    // ---------- find Ending object ----------
+		    EndingObjects =
+		        Table.SelectRows(
+		            WB,
+		            each ([Kind] = "Sheet" or [Kind] = "Table") and Text.Trim([Name]) = "Ending"
+		        ),
+		
+		    Issues2 =
+		        if WBtry <> null and Table.RowCount(EndingObjects) = 0
+		        then AddIssue(Issues1, "MissingEndingSheetOrTable", "No sheet/table named 'Ending'")
+		        else Issues1,
+		
+		    Data0 =
+		        if Table.RowCount(EndingObjects) > 0
+		        then EndingObjects{0}[Data]
+		        else #table({},{}),
+		
+		    // ---------- detect header row (look for any cell containing 'BILLINGS') ----------
+		    RowsAsLists = try Table.ToRows(Data0) otherwise {},
+		    HeaderFlags =
+		        List.Transform(
+		            RowsAsLists,
+		            (r) =>
+		                List.AnyTrue(
+		                    List.Transform(
+		                        r,
+		                        (c) =>
+		                            let t = try Text.Upper(Text.From(c)) otherwise ""
+		                            in Text.Contains(t, "BILLINGS")
+		                    )
+		                )
+		        ),
+		    HeaderRowIndex = try List.PositionOf(HeaderFlags, true) otherwise -1,
+		
+		    Issues3 =
+		        if Table.RowCount(Data0) > 0 and HeaderRowIndex < 0
+		        then AddIssue(Issues2, "HeaderRowNotFound", "Could not find a row containing 'Billings'")
+		        else Issues2,
+		
+		    Data1 =
+		        if HeaderRowIndex >= 0
+		        then Table.Skip(Data0, HeaderRowIndex)
+		        else Data0,
+		
+		    Promoted =
+		        try Table.PromoteHeaders(Data1, [IgnoreErrors=true])
+		        otherwise Data1,
+		
+		    // ---------- strip Source.Name if customer included it as first column in the sheet ----------
+		    PromCols = Table.ColumnNames(Promoted),
+		    HasSourceNameCol = List.Contains(PromCols, "Source.Name"),
+		
+		    Cleaned =
+		        if HasSourceNameCol
+		        then Table.RemoveColumns(Promoted, {"Source.Name"})
+		        else Promoted,
+		
+		    // ---------- validate column count ----------
+		    CleanColCount = Table.ColumnCount(Cleaned),
+		    Issues4 =
+		        if CleanColCount < 13
+		        then AddIssue(Issues3, "TooFewColumns", "Expected at least 13 columns after header promotion; got " & Text.From(CleanColCount))
+		        else Issues3,
+		
+		    // ---------- standardize schema by POSITION (first 13 columns) ----------
+		    CanonNames = {
+		        "Item_Code",
+		        "Item",
+		        "Pack_Type",
+		        "Billings",
+		        "Depletions",
+		        "Distributor Ending Inventory",
+		        "DC Ending Inventory",
+		        "Ending In-Transit",
+		        "Billings_PLT",
+		        "Depletions_PLT",
+		        "Distributor Ending Inventory_PLT",
+		        "DC Ending Inventory_PLT",
+		        "Ending In-Transit_PLT"
+		    },
+		
+		    ExistingCols = Table.ColumnNames(Cleaned),
+		    First13 = List.FirstN(ExistingCols, List.Min({13, List.Count(ExistingCols)})),
+		
+		    Core =
+		        Table.SelectColumns(Cleaned, First13, MissingField.Ignore),
+		
+		    RenPairs = List.Zip({First13, List.FirstN(CanonNames, List.Count(First13))}),
+		    Standardized =
+		        Table.RenameColumns(Core, RenPairs, MissingField.Ignore),
+		
+		    // ---------- parse MonthStartDate from filename: "YYYY MM ..." ----------
+		    Y = try Number.FromText(Text.Start(fileName, 4)) otherwise null,
+		    M = try Number.FromText(Text.Middle(fileName, 5, 2)) otherwise null,
+		    MonthStart =
+		        if Y <> null and M <> null and M >= 1 and M <= 12 then #date(Y, M, 1) else null,
+		
+		    Issues5 =
+		        if MonthStart = null
+		        then AddIssue(Issues4, "MonthParseFailed", "Expected filename to start with 'YYYY MM' (e.g., '2026 09 - ...')")
+		        else Issues4,
+		
+		    // ---------- add Source.Name and MonthStartDate ----------
+		    WithMeta =
+		        Table.AddColumn(Standardized, "Source.Name", each fileName, type text),
+		
+		    WithMonth =
+		        Table.AddColumn(WithMeta, "MonthStartDate", each MonthStart, type date),
+		
+		    // ---------- convert numeric columns safely (no refresh breaks) ----------
+		    NumCols = {
+		        "Billings","Depletions","Distributor Ending Inventory","DC Ending Inventory","Ending In-Transit",
+		        "Billings_PLT","Depletions_PLT","Distributor Ending Inventory_PLT","DC Ending Inventory_PLT","Ending In-Transit_PLT"
+		    },
+		
+		    ExistingNumCols = List.Intersect({Table.ColumnNames(WithMonth), NumCols}),
+		
+		    Typed =
+		        Table.TransformColumns(
+		            WithMonth,
+		            List.Transform(ExistingNumCols, each {_, ToNumber, type number})
+		        ),
+		
+		    // ---------- remove obviously blank rows ----------
+		    FinalData =
+		        if List.Contains(Table.ColumnNames(Typed), "Item_Code")
+		        then Table.SelectRows(Typed, each [Item_Code] <> null and Text.Trim(Text.From([Item_Code])) <> "")
+		        else Typed
+		
+		in
+		    [ Data = FinalData, Issues = Issues5 ]
+	lineageTag: b6205131-7812-48dd-9d15-b799746b13fa
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Function
+
